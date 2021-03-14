@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<setup xmlns="http://databene.org/benerator/0.7.6"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://databene.org/benerator/0.7.6 benerator-0.7.6.xsd"
+       defaultEncoding="UTF-8"
+       defaultDataset="RU"
+       defaultLocale="ru"
+       defaultLineSeparator="\n">
+
+    <bean id="dtGen" class="DateTimeGenerator">
+        <property name='minDate'          value='2013-01-01'/>
+        <property name='maxDate'          value='2013-01-31'/>
+        <property name='dateGranularity'  value='00-00-02'  />
+        <property name='dateDistribution' value='random'    />
+        <property name='minTime'          value='08:00:00'  />
+        <property name='maxTime'          value='17:00:00'  />
+        <property name='timeGranularity'  value='00:00:01'  />
+        <property name='timeDistribution' value='random'    />
+    </bean>
+
+    <import domains="person"/>
+
+    <bean id="out" class="CSVEntityExporter">
+        <property name="uri" value="src/main/resources/student-table.csv"/>
+        <property name="columns" value="id, fio, login, password, privilege, sex, balance, course, parent_fio, phone_number, debtor"/>
+    </bean>
+    <generate type="student" count="150" consumer="out">
+        <variable name="person" generator="PersonGenerator"/>
+        <variable name="personParent" generator="PersonGenerator"/>
+        <id name="id" type="long"/>
+        <attribute name="fio" script="person.familyName + person.givenName"/>
+        <attribute name="login" type="string" pattern="[a-z][A-Z]{12}"/>
+        <attribute name="password" type="string" pattern="[a-z][A-Z][1-9][0-9]{14}"/>
+        <attribute name="privilege" type="int" constant="3"/>
+        <attribute name="sex" script="person.gender" map="'MALE'->'true','FEMALE'->'false'"/>
+        <attribute name="balance" type="big_decimal" pattern="\d{4}"/>
+        <attribute name="course" type="string" values="'Гуманитарное направление', 'Социально-экономическое направление',
+'Химико-биологическое направление', 'Физико-технологическое направление'"/>
+        <attribute name="parent_fio" script="person.familyName + personParent.givenName"/>
+        <attribute name="phone_number" type="string" pattern="\+[0-9]{11}"/>
+        <attribute name="debtor" type="boolean" pattern="[0-1]{1}" map="'0'->'false','1'->'true'"/>
+    </generate>
+
+
+
+    <bean id="out" class="CSVEntityExporter">
+        <property name="uri" value="src/main/resources/teacher-table.csv"/>
+        <property name="columns" value="id, fio, login, password, privilege, sex, phone_number"/>
+    </bean>
+        <generate type="teacher" count="20" consumer="out">
+            <variable name="person" generator="PersonGenerator"/>
+            <id name="id" type="long"/>
+            <attribute name="fio" script="person.familyName + person.givenName"/>
+            <attribute name="login" type="string" pattern="[a-z][A-Z]{12}"/>
+            <attribute name="password" type="string" pattern="[a-z][A-Z][1-9][0-9]{14}"/>
+            <attribute name="privilege" type="int" constant="2"/>
+            <attribute name="sex" script="person.gender" map="'MALE'->'true','FEMALE'->'false'"/>
+            <attribute name="phone_number" type="string" pattern="\+[0-9]{11}"/>
+        </generate>
+
+
+
+        <bean id="out" class="CSVEntityExporter">
+            <property name="uri" value="src/main/resources/student-diciplines-table.csv"/>
+            <property name="columns" value="student_id, disciplines_id"/>
+        </bean>
+            <generate type="students-disciplines" count="150" consumer="out">
+                <id name="student_id" type="long"/>
+                <attribute name="disciplines_id" type="string" pattern="^([1-9]|1[0-4])"/>
+            </generate>
+
+
+
+    <bean id="out" class="CSVEntityExporter">
+        <property name="uri" value="src/main/resources/teacher-diciplines-table.csv"/>
+        <property name="columns" value="teacher_id, disciplines_id"/>
+    </bean>
+    <generate type="teacher-disciplines" count="20" consumer="out">
+        <id name="teacher_id" type="long"/>
+        <attribute name="disciplines_id" type="string" pattern="^([1-9]|1[0-4])"/>
+    </generate>
+
+</setup>
